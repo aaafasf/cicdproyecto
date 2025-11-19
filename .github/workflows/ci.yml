@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -7,32 +7,34 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_and_test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-      - name: Instalar dependencias
-        run: npm install
+    - name: Install dependencies
+      run: npm install
 
-      - name: Ejecutar pruebas
-        run: npm test
+    - name: Give jest execution permissions
+      run: chmod +x ./node_modules/.bin/jest
 
-      - name: Crear package ZIP
-        run: |
-          mkdir build
-          cp -r utils build/
-          zip -r package.zip build
+    - name: Run tests
+      run: npm test --runInBand
 
-      - name: Subir artefacto generado
-        uses: actions/upload-artifact@v4
-        with:
-          name: package
-          path: package.zip
+    - name: Build package (.zip)
+      run: |
+        mkdir build
+        zip -r build/artifact.zip .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-package
+        path: build/artifact.zip
